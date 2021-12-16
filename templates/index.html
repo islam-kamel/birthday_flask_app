@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap" rel="stylesheet">
+        <link href="/static/styles.css" rel="stylesheet">
+        <title>Birthdays</title>
+    </head>
+    <body>
+        {% if get_flashed_messages()%}
+            {% for category, message in get_flashed_messages(with_categories=True)%}
+                <div class="jumbotron-{{category}}" id="header">
+                    <h1>{{message}}</h1>
+                </div>
+            {% endfor %}
+
+        {% else %}
+        <div class="jumbotron" id="header">
+            <h1>Birthdays</h1>
+        </div>
+
+        {% endif %}
+            <!--<h1></h1>-->
+
+        <div class="container">
+            <div class="section">
+                <h2>Add a Birthday</h2>
+                <!-- TODO: Create a form for users to submit a name, a month, and a day -->
+                <form action="/" method="post" autocomplete="off">
+                    <input type="hidden" value="{{session.id}}" name="id">
+                    <input type="hidden" value="add" name="job">
+                    <label>
+                        <input type="text" name="name" autofocus placeholder="Name">
+                    </label>
+                    <label>
+                        <input type="number" name="month" placeholder="Month" value="0">
+                    </label>
+                    <label>
+                        <input type="number" name="day"  placeholder="Day" value="0">
+                    </label>
+                    {% if not session.id %}
+                        <input type="submit" value="Add Birthday"  title='Add Your birthday Now 🥳'>
+                    {% else %}
+                        <input type="submit" value="Add Birthday" disabled class="disabled" title='You are not allowed to add more than birthday &#10071;'>
+                    {% endif %}
+                    <input type="hidden" value="Delete" title="Warning this button will delete your birthday &#9940;">
+                </form>
+            </div>
+
+            <div class="section">
+                <h2>All Birthdays</h2>
+                <div class="scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Birthday</th>
+                        </tr>
+                    </thead>
+                    <tbody >
+                        <!-- TODO: Loop through the database entries to display them in this table -->
+                        {% for birthday in birthdays %}
+                            <tr>
+                                <td>{{birthday.name}}</td>
+                                <td>{{birthday.month}}/ {{birthday.day}} {% if session.id == birthday.id %}<span><button id="edit">Edit</button></span>{% endif %}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            let y = document.querySelector(".section").offsetHeight + document.querySelector("#header").offsetHeight
+            document.querySelector('.scroll').style.height = screen.height - (screen.height / 2) - y / 3 + "px"
+            
+            let header = document.getElementById('header');
+            function toggle_header (){
+                header.children[0].className = "hide"
+                setTimeout(function ()
+                {
+                    header.children[0].className = 'show'
+                    document.getElementById("header").className = "jumbotron"
+                    header.children[0].innerHTML = "Birthdays"
+                },400);
+            }
+            if (header.children[0].innerHTML !== "Birthdays")
+            {
+                setTimeout(toggle_header,3000);
+            }
+
+            const edit = document.querySelector('#edit')
+            const user_data = document.getElementById("edit").parentElement.parentElement.innerHTML.split("<")[0].split("/")
+            const user_name = document.getElementById("edit").parentElement.parentElement.parentElement.children[0].innerHTML
+            const month = user_data[0]
+            const day = user_data[1]
+            edit.addEventListener('click', function (){
+                document.querySelector("input[name='job']").value = "edit"
+                document.querySelector("input[type='submit']").value = "Save";
+                document.querySelector("input[type='submit']").disabled = false;
+                document.querySelector("input[type='submit']").className = '';
+                let delete_btn = document.querySelector("input[value='Delete']");
+                delete_btn.type = "submit";
+                delete_btn.addEventListener('click', function (){
+                    document.querySelector("input[name='job']").value = "delete";
+                })
+                let form = document.querySelectorAll('form')
+                form.forEach(function (form)
+                {
+                    form.name.value = user_name;
+                    form.month.value = parseInt(month);
+                    form.day.value = parseInt(day);
+                });
+            })
+        </script>
+        
+    </body>
+</html>
